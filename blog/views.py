@@ -164,7 +164,8 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return redirect("blog:post_detail", id=post.id)
 
     def get_success_url(self):
-        return reverse_lazy("blog:post_detail", kwargs={"id": self.kwargs["post_id"]})
+        return reverse_lazy("blog:post_detail",
+                            kwargs={"id": self.kwargs["post_id"]})
 
 
 class CommentEditView(LoginRequiredMixin, UpdateView):
@@ -183,7 +184,8 @@ class CommentEditView(LoginRequiredMixin, UpdateView):
         return get_object_or_404(Comment, id=self.kwargs["comment_id"])
 
     def get_success_url(self):
-        return reverse("blog:post_detail", kwargs={"id": self.kwargs["post_id"]})
+        return reverse("blog:post_detail",
+                       kwargs={"id": self.kwargs["post_id"]})
 
 
 class CommentDeleteView(LoginRequiredMixin, DeleteView):
@@ -195,7 +197,8 @@ class CommentDeleteView(LoginRequiredMixin, DeleteView):
         return get_object_or_404(Comment, id=self.kwargs["comment_id"])
 
     def get_success_url(self):
-        return reverse_lazy("blog:post_detail", kwargs={"id": self.kwargs["post_id"]})
+        return reverse_lazy("blog:post_detail",
+                            kwargs={"id": self.kwargs["post_id"]})
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
