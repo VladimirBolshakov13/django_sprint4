@@ -177,7 +177,9 @@ class CommentEditView(LoginRequiredMixin, UpdateView):
         comment = get_object_or_404(Comment, id=kwargs["comment_id"])
 
         if comment.author != request.user:
-            return HttpResponseForbidden("Вы не можете редактировать этот комментарий.")
+            return HttpResponseForbidden(
+                "Вы не можете редактировать этот комментарий."
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
