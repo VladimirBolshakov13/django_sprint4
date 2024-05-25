@@ -41,20 +41,22 @@ class CommentDeleteEditMixin(CommentMixin):
 
 
 class ProfileView(ListView):
+
     model = Post
     template_name = 'blog/profile.html'
     context_object_name = 'page_obj'
     paginate_by = settings.POSTS_ON_PAGE
 
     def get_queryset(self):
-        self.profile = get_object_or_404(User, username=self.kwargs['username'])
-        return Post.objects.filter(author=self.profile).order_by('-pub_date')
+        self.profile = get_object_or_404(User,
+                username=self.kwargs['username'])
+        return Post.objects.filter(author=self.profile).order_by('-pub_date'
+                )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['profile'] = self.profile
         return context
-
 
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
@@ -102,7 +104,7 @@ class PostDetailView(PostMixin, DetailView):
     pk_url_kwarg = 'id'
 
     def get_object(self, queryset=None):
-        post = get_object_or_404(Post, id=self.kwargs['id'])
+        post = get_object_or_404(Post, post_id=self.kwargs['id'])
 
         if not (post.is_published and post.category.is_published
                 and post.pub_date <= timezone.now()):
@@ -129,14 +131,12 @@ class DeletePostView(PostMixin, LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy('blog:index')
 
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.author != request.user:
-            return redirect('blog:post_detail', id=instance.id)
-        with transaction.atomic():
-            instance.comments.all().delete()
-            instance.delete()
-        return redirect(self.get_success_url())
+    def dispatch(self, request, *args, **kwargs):
+        comment = self.get_object()
+        if comment.author != request.user:
+            return redirect('blog:post_detail', id=self.kwargs['post_id'])
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 class EditPostView(PostMixin, LoginRequiredMixin, UpdateView):
@@ -183,11 +183,12 @@ class EditCommentView(
     LoginRequiredMixin,
     UpdateView
 ):
-
     def dispatch(self, request, *args, **kwargs):
-        if self.get_object().author != request.user:
+        obj = self.get_object()
+        if obj.author != request.user:
             return HttpResponseForbidden("Вы не можете редактировать этот комментарий.")
         return super().dispatch(request, *args, **kwargs)
+
 
 
 class DeleteCommentView(
@@ -235,15 +236,11 @@ class CategoryPostsView(ListView):
             slug=self.kwargs['category_slug'],
             is_published=True
         )
+        self.category = category
         return (Post.published.filter(
             category=category).order_by('-pub_date'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        category = get_object_or_404(
-            Category,
-            slug=self.kwargs['category_slug'],
-            is_published=True
-        )
-        context['category'] = category
+        context['category'] = self.category
         return context
