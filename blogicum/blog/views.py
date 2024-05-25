@@ -48,7 +48,7 @@ class ProfileView(ListView):
 
     def get_queryset(self):
         self.profile = get_object_or_404(User,
-            username=self.kwargs['username'])
+                                         username=self.kwargs['username'])
         return Post.objects.filter(author=self.profile).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
