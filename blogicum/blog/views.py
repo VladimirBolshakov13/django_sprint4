@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -50,8 +49,7 @@ class ProfileView(ListView):
     def get_queryset(self):
         self.profile = get_object_or_404(User,
                 username=self.kwargs['username'])
-        return Post.objects.filter(author=self.profile).order_by('-pub_date'
-                )
+        return Post.objects.filter(author=self.profile).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -186,9 +184,10 @@ class EditCommentView(
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
         if obj.author != request.user:
-            return HttpResponseForbidden("Вы не можете редактировать этот комментарий.")
+            return HttpResponseForbidden(
+              "Вы не можете редактировать этот комментарий."
+            )
         return super().dispatch(request, *args, **kwargs)
-
 
 
 class DeleteCommentView(
