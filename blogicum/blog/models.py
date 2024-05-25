@@ -11,11 +11,9 @@ class Category(PublishedModel):
     title = models.CharField(
         'Заголовок',
         max_length=settings.MAX_LENGTH,
-        blank=False
     )
     description = models.TextField(
         verbose_name='Описание',
-        blank=False
     )
     slug = models.SlugField(
         'Идентификатор',
@@ -38,7 +36,6 @@ class Location(PublishedModel):
     name = models.CharField(
         'Название места',
         max_length=settings.MAX_LENGTH,
-        blank=False
     )
 
     class Meta:
@@ -85,7 +82,6 @@ class Post(PublishedModel):
         User,
         verbose_name='Автор публикации',
         on_delete=models.CASCADE,
-        blank=False
     )
 
     category = models.ForeignKey(
@@ -94,7 +90,6 @@ class Post(PublishedModel):
         related_name='posts',
         verbose_name='Категория',
         null=True,
-        blank=False
     )
     location = models.ForeignKey(
         Location,

@@ -47,14 +47,14 @@ class ProfileView(ListView):
     paginate_by = settings.POSTS_ON_PAGE
 
     def get_queryset(self):
-        profile = get_object_or_404(User, username=self.kwargs['username'])
-        return Post.objects.filter(author=profile.id).order_by('-pub_date')
+        self.profile = get_object_or_404(User, username=self.kwargs['username'])
+        return Post.objects.filter(author=self.profile).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        profile = get_object_or_404(User, username=self.kwargs['username'])
-        context['profile'] = profile
+        context['profile'] = self.profile
         return context
+
 
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
@@ -185,11 +185,8 @@ class EditCommentView(
 ):
 
     def dispatch(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, id=kwargs['comment_id'])
-        if comment.author != request.user:
-            return HttpResponseForbidden(
-                "Вы не можете редактировать этот комментарий."
-            )
+        if self.get_object().author != request.user:
+            return HttpResponseForbidden("Вы не можете редактировать этот комментарий.")
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -222,7 +219,7 @@ class PostListView(ListView):
     model = Post
     template_name = 'blog/index.html'
     queryset = Post.published.select_related('author')
-    ordering = ('-pub_date')
+    ordering = '-pub_date'
     paginate_by = settings.POSTS_ON_PAGE
 
 
