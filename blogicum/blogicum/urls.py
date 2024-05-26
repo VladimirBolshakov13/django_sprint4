@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import include, path, reverse_lazy
 from django.views.generic.edit import CreateView
+from django.views.defaults import permission_denied
 
 urlpatterns = [
     path('', include('blog.urls')),
@@ -36,6 +37,6 @@ urlpatterns = [
     ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+handler403 = permission_denied
 handler404 = 'pages.views.page_not_found'
 handler500 = 'pages.views.server_error'
-CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'

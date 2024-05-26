@@ -231,6 +231,7 @@ class CategoryPostsView(ListView):
     template_name = 'blog/category.html'
     context_object_name = 'page_obj'
     paginate_by = settings.POSTS_ON_PAGE
+    SORT_ORDER = '-pub_date'  # Константа для критерия сортировки
 
     def get_queryset(self):
         category = get_object_or_404(
@@ -240,7 +241,7 @@ class CategoryPostsView(ListView):
         )
         self.category = category
         return (Post.published.filter(
-            category=category).order_by('-pub_date'))
+            category=category).order_by(self.SORT_ORDER))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
