@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
+from django.db.models import ProtectedError
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -134,10 +134,12 @@ class DeletePostView(PostMixin, LoginRequiredMixin, DeleteView):
         instance = self.get_object()
         if instance.author != request.user:
             return redirect('blog:post_detail', id=instance.id)
-        with transaction.atomic():
-            instance.comments.all().delete()
+
+        try:
             instance.delete()
-        return redirect(self.get_success_url())
+            return redirect(self.get_success_url())
+        except ProtectedError:
+            return redirect('blog:post_detail', id=instance.id)
 
 
 class EditPostView(PostMixin, LoginRequiredMixin, UpdateView):
