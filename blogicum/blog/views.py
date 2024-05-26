@@ -49,9 +49,8 @@ class ProfileView(ListView):
 
     def get_queryset(self):
         self.profile = get_object_or_404(User,
-                username=self.kwargs['username'])
-        return Post.objects.filter(author=self.profile).order_by('-pub_date'
-                )
+                                         username=self.kwargs['username'])
+        return Post.objects.filter(author=self.profile).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -104,7 +103,7 @@ class PostDetailView(PostMixin, DetailView):
     pk_url_kwarg = 'id'
 
     def get_object(self, queryset=None):
-        post = get_object_or_404(Post, post_id=self.kwargs['id'])
+        post = get_object_or_404(Post, id=self.kwargs['id'])
 
         if not (post.is_published and post.category.is_published
                 and post.pub_date <= timezone.now()):
@@ -131,12 +130,14 @@ class DeletePostView(PostMixin, LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy('blog:index')
 
-    def dispatch(self, request, *args, **kwargs):
-        comment = self.get_object()
-        if comment.author != request.user:
-            return redirect('blog:post_detail', id=self.kwargs['post_id'])
-
-        return super().dispatch(request, *args, **kwargs)
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.author != request.user:
+            return redirect('blog:post_detail', id=instance.id)
+        with transaction.atomic():
+            instance.comments.all().delete()
+            instance.delete()
+        return redirect(self.get_success_url())
 
 
 class EditPostView(PostMixin, LoginRequiredMixin, UpdateView):
@@ -186,9 +187,10 @@ class EditCommentView(
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
         if obj.author != request.user:
-            return HttpResponseForbidden("Вы не можете редактировать этот комментарий.")
+            return HttpResponseForbidden(
+                "Вы не можете редактировать этот комментарий."
+            )
         return super().dispatch(request, *args, **kwargs)
-
 
 
 class DeleteCommentView(
@@ -220,7 +222,7 @@ class PostListView(ListView):
     model = Post
     template_name = 'blog/index.html'
     queryset = Post.published.select_related('author')
-    ordering = '-pub_date'
+    ordering = ('-pub_date')
     paginate_by = settings.POSTS_ON_PAGE
 
 
